@@ -29,13 +29,15 @@ A comprehensive command-line hospital management application built in Python. It
 
 The code is fully modularized to separate concerns (UI, Logic, and Data):
 
-
+<img width="539" height="412" alt="Almacenamiento de datos" src="https://github.com/user-attachments/assets/98da439d-a411-4eaa-813f-739f5af2bcfa" />
 
 ### Data Storage
 
 The system automatically saves data to Datos_hospital.json after modifying the state. If the file is missing or corrupted, the system starts with an empty state.
 
 Example JSON structure:
+
+<img width="761" height="447" alt="Estructura Español" src="https://github.com/user-attachments/assets/5f276e5e-1529-4c1f-8d35-3730a426c4ca" />
 
 
 ### Possible Improvements
@@ -84,6 +86,7 @@ Ejecuta el script principal:
 
 El código está completamente modularizado para separar responsabilidades (Interfaz, Lógica y Datos):
 
+<img width="761" height="447" alt="Estructura Español" src="https://github.com/user-attachments/assets/04970d8a-b2bd-4915-b363-cf1781a57ad3" />
 
 
 ### Mejoras posibles
