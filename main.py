@@ -9,7 +9,7 @@ from lógica import (
     mostrar_resumen,
 )
 from menus import menu, menu_inicial
-from persistencia import cargar_datos, exportar_datos, guardar_datos
+from persistencia import descargar_datos, exportar_datos, guardar_datos
 from utilidades import escoer_opcion
 
 
@@ -17,7 +17,7 @@ def main():
     programa = True
 
     print("\nSistema de gestión de pacientes")
-    lista_de_hospitales = cargar_datos()
+    lista_de_hospitales = descargar_datos()
     try:
         while programa:
             menu_inicial()
@@ -33,29 +33,33 @@ def main():
                         while True:
                             menu()
                             opcion = escoer_opcion("\nOpción: ", [1, 2, 3, 4, 5, 6, 7])
-                            match opcion:
-                                case 1:
-                                    contratar_medico(
-                                        lista_de_hospitales, hospital_actual
-                                    )
-                                case 2:
-                                    case2(hospital_actual, lista_de_hospitales)
-                                case 3:
-                                    case3_mostrar_relacion_de_medicos(hospital_actual)
-                                case 4:
-                                    mostrar_relacion_de_pacientes(hospital_actual)
-                                case 5:
-                                    mostrar_resumen(hospital_actual)
-                                case 6:
-                                    break
-                                case 7:
-                                    programa = False
-                                    break
+                            if hospital_actual:
+                                match opcion:
+                                    case 1:
+                                        contratar_medico(
+                                            lista_de_hospitales, hospital_actual
+                                        )
+                                    case 2:
+                                        case2(hospital_actual, lista_de_hospitales)
+                                    case 3:
+                                        case3_mostrar_relacion_de_medicos(hospital_actual)
+                                    case 4:
+                                        mostrar_relacion_de_pacientes(hospital_actual)
+                                    case 5:
+                                        mostrar_resumen(hospital_actual)
+                                    case 6:
+                                        break
+                                    case 7:
+                                        programa = False
+                                        break
                     else:
                         print("\nNo se ha añadido ningún centro médico. Añada uno primero.")
                 case 3:
                     try:
-                        exportar_datos(lista_de_hospitales)
+                        if lista_de_hospitales:
+                            exportar_datos(lista_de_hospitales)
+                        else: 
+                            print("\nNo se ha añadido ningún centro médico. Añada uno primero.")
                     except PermissionError:
                         print(
                             "\nNo es posible guardar porque otra aplicación tiene abierto el programa. Ciérrelo e intente de nuevo."

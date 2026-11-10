@@ -2,7 +2,6 @@ import csv
 import json
 
 from clases import Hospital, Medico, Paciente
-from utilidades import convertir_a_diccionario
 
 
 def guardar_datos(lista_de_hospitales):
@@ -10,8 +9,23 @@ def guardar_datos(lista_de_hospitales):
     with open("Datos_hospital.json", "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=4)
 
+def convertir_a_diccionario(lista_de_hospitales: list):
+    datos_para_json = []
+    for hospital in lista_de_hospitales:
+        diccionario_hospital = {"Nombre": hospital.nombre, "Personas": []}
+        for persona in hospital.lista_personas:
+            diccionario_personas = persona.__dict__.copy()
+            diccionario_personas["Tipo"] = persona.devolver_tipo()
+            if isinstance(persona, Paciente) and persona.medico_asignado:
+                diccionario_personas["medico_asignado"] = persona.medico_asignado.nombre
+            diccionario_hospital["Personas"].append(diccionario_personas)
+        datos_para_json.append(diccionario_hospital)
+    return datos_para_json
 
-def exportar_datos(lista_de_hospitales):
+
+
+
+def exportar_datos(lista_de_hospitales: list):
     nombre_del_archivo = "Reporte_Global.csv"
     with open(nombre_del_archivo, mode="w", encoding="utf-8", newline="") as archivo:
         columnas = [
@@ -26,71 +40,97 @@ def exportar_datos(lista_de_hospitales):
         escritor.writeheader()
 
         for hospital in lista_de_hospitales:
-            for medico in hospital.lista_medicos:
+            for persona in hospital.lista_personas:
+                if isinstance(persona, Medico):
+                    especialidad_afeccion = persona.especialidad
+                    medico_asignado = "-"
+                else:
+                    especialidad_afeccion = persona.enfermedad
+                    medico_asignado = (
+                        persona.medico_asignado.nombre
+                        if persona.medico_asignado
+                        else "Ninguno"
+                    )
+
                 escritor.writerow(
                     {
                         "Hospital": hospital.nombre,
-                        "Clase": "Médico",
-                        "Nombre": medico.nombre,
-                        "Edad": "-",
-                        "Especialidad/Afección": medico.especialidad,
-                        "Médico Asignado": "-",
+                        "Clase": persona.devolver_tipo(),
+                        "Nombre": persona.nombre,
+                        "Edad": persona.edad,
+                        "Especialidad/Afección": especialidad_afeccion,
+                        "Médico Asignado": medico_asignado,
                     }
                 )
-            for paciente in hospital.lista_pacientes:
-                escritor.writerow(
-                    {
-                        "Hospital": hospital.nombre,
-                        "Clase": "Paciente",
-                        "Nombre": paciente.nombre,
-                        "Edad": paciente.edad,
-                        "Especialidad/Afección": paciente.enfermedad,
-                        "Médico Asignado": paciente.medico_asignado.nombre
-                        if paciente.medico_asignado
-                        else "Ninguno",
-                    }
-                )
+
         print(
             f"\nSe han exportado los datos correctamente al archivo llamado: {nombre_del_archivo}"
         )
 
 
-def cargar_datos():
+def descargar_datos():
     try:
         with open("Datos_hospital.json", "r", encoding="utf-8") as archivo:
-            datos = json.load(archivo)
-            lista_de_hospitales = []
-            for diccionario_hospitales in datos:
-                hospital = Hospital(diccionario_hospitales["Nombre"])
+            datos_descargados = json.load(archivo)
+            if datos_descargados:
+                lista_de_hospitales = []
+                for cada_diccionario in datos_descargados:
+                    hospital = Hospital(cada_diccionario["Nombre"])
 
-                # reconstruyendo medicos
+                    for cada_persona in cada_diccionario[
+                        "Personas"
+                    ]:  # reconstruyendo medicos
+                        if cada_persona["Tipo"] == "Medico":
+                            medico = cada_persona["nombre"]
+                            edad = cada_persona["edad"]
+                            especialidad = cada_persona["especialidad"]
+                            nuevo_medico = Medico(medico, edad, especialidad)
+                            hospital.añadir_medico(nuevo_medico)
 
-                for diccionario_de_medicos in diccionario_hospitales["Médicos"]:
-                    medico = diccionario_de_medicos["Nombre"]
-                    especialidad = diccionario_de_medicos["Especialidad"]
-                    nuevo_medico = Medico(medico, especialidad)
-                    hospital.lista_medicos.append(nuevo_medico)
+                        # reconstruyendo pacientes
 
-                # reconstruyendo pacientes
+                        else:
+                            nuevo_paciente = Paciente(
+                                cada_persona["nombre"],
+                                cada_persona["edad"],
+                                cada_persona["enfermedad"],
+                                None,
+                            )
+                            hospital.añadir_paciente(nuevo_paciente)
 
-                for diccionario_de_pacientes in diccionario_hospitales["Pacientes"]:
-                    medico_asignado = None
-                    if diccionario_de_pacientes["Médico asignado"]:
-                        for med in hospital.lista_medicos:
-                            if (
-                                med.nombre
-                                == diccionario_de_pacientes["Médico asignado"]
-                            ):
-                                medico_asignado = med
-                                break
-                    nombre = diccionario_de_pacientes["Nombre"]
-                    edad = diccionario_de_pacientes["Edad"]
-                    enfermedad = diccionario_de_pacientes["Afección"]
-                    nuevo_paciente = Paciente(nombre, edad, enfermedad, medico_asignado)
-                    hospital.lista_pacientes.append(nuevo_paciente)
-                lista_de_hospitales.append(hospital)
-        print("\nDatos cargados exitosamente")
+                    # SEGUNDA PASADA: asignar los médicos a los pacientes
+                    buscador_medicos = {}
+                    for cada_persona_objeto in hospital.lista_personas:
+                        if isinstance(cada_persona_objeto, Medico):
+                            buscador_medicos[cada_persona_objeto.nombre] = (
+                                cada_persona_objeto
+                            )
+
+                    for cada_persona in cada_diccionario["Personas"]:
+                        if cada_persona["Tipo"] == "Paciente" and cada_persona.get(
+                            "medico_asignado"
+                        ):
+                            nombre_medico = cada_persona["medico_asignado"]
+                            # Buscamos al paciente
+                            for cada_objeto_paciente in hospital.lista_personas:
+                                if (
+                                    cada_objeto_paciente.nombre
+                                    == cada_persona["nombre"]
+                                ):
+                                    objeto_medico = buscador_medicos.get(nombre_medico)
+                                    if objeto_medico:
+                                        cada_objeto_paciente.asignar_medico(
+                                            objeto_medico
+                                        )
+                                    break
+
+                    lista_de_hospitales.append(hospital)
+                print("\nDatos cargados exitosamente")
+            else:
+                print("\nDatos corruptos. Se creará una nueva base de datos\n")
+                return []
         return lista_de_hospitales
+
     except FileNotFoundError:
         print("\nNo existen datos previos. Se creará una nueva base de datos")
         return []

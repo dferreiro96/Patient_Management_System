@@ -1,6 +1,6 @@
 def validar_nombre(mensaje):
     while True:
-        nombre = input(mensaje).title() .strip()
+        nombre = pedir_texto(mensaje)
         if len(nombre) < 3 or any(c.isdigit() for c in nombre):
             print(
                 "\nEl nombre debe tener más de 3 caracteres, y contener únicamente letras."
@@ -37,31 +37,3 @@ def pedir_edad(mensaje):
 def pedir_texto(mensaje):
     nombre = input(mensaje).title().strip()
     return nombre
-
-
-def convertir_a_diccionario(lista_de_hospitales):
-    datos_para_json = []
-    for hospital in lista_de_hospitales:
-        diccionario_hospitales = {
-            "Nombre": hospital.nombre,
-            "Médicos": [],
-            "Pacientes": [],
-        }
-        for medicos in hospital.lista_medicos:
-            diccionario_hospitales["Médicos"].append(
-                {"Nombre": medicos.nombre, "Especialidad": medicos.especialidad}
-            )
-        for pacientes in hospital.lista_pacientes:
-            diccionario_hospitales["Pacientes"].append(
-                {
-                    "Nombre": pacientes.nombre,
-                    "Edad": pacientes.edad,
-                    "Afección": pacientes.enfermedad,
-                    "Médico asignado": pacientes.medico_asignado.nombre
-                    if pacientes.medico_asignado
-                    else None,
-                }
-            )
-
-        datos_para_json.append(diccionario_hospitales)
-    return datos_para_json

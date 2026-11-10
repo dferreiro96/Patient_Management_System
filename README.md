@@ -13,6 +13,7 @@ A comprehensive command-line hospital management application built in Python. It
 - 💾 **Automatic Persistence:** Automatically saves the entire system state (hospitals, doctors, patients) to a JSON file after every action, ensuring no data is lost.
 - 📊 **CSV Export:** Generate a comprehensive global report in CSV format, ready to be analyzed in Excel.
 - 🛑 **Crash Protection:** Uses `try/except` blocks (including `KeyboardInterrupt` and `PermissionError`) to save data and exit gracefully even if the program is interrupted or a file is locked.
+- **Object-Oriented Design:** Uses inheritance (`Persona`, `Medico`, `Paciente`) and polymorphism for clean, scalable code.
 
 ### Requirements
 
@@ -44,7 +45,6 @@ Example JSON structure:
 
 - Add a Graphical User Interface (GUI) using tkinter or customtkinter.
 
-- Implement inheritance to create a base Persona class for Medico and Paciente.
 
 
 
@@ -67,6 +67,8 @@ Una completa aplicación de consola para la gestión hospitalaria construida en 
 - 📊 Exportación a CSV: Genera un reporte global en formato CSV, listo para ser analizado en Excel.
 
 - 🛑 Protección contra Cierres: Utiliza bloques try/except (incluyendo KeyboardInterrupt y PermissionError) para guardar datos y salir elegantemente si el programa se interrumpe o un archivo está bloqueado.
+
+- **Diseño Orientado a Objetos:** Usa herencia (`Persona`, `Medico`, `Paciente`) y polimorfismo para un código limpio y escalable.
 
 ### Requisitos
 
@@ -93,7 +95,6 @@ El código está completamente modularizado para separar responsabilidades (Inte
 
 - Añadir una Interfaz Gráfica de Usuario (GUI) usando tkinter o customtkinter.
 
-- Implementar herencia para crear una clase base Persona para Medico y Paciente.
 
 ### 📄 License / Licencia
 
