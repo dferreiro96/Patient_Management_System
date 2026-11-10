@@ -3,22 +3,34 @@ import json
 import time
 
 
-class Medico:
-    def __init__(self, nombre, especialidad=None):
+class Persona:
+    def __init__(self, nombre, edad):
         self.nombre = nombre
+        self.edad = edad
+
+    def devolver_tipo(self):
+        tipo = self.__class__.__name__
+        return tipo
+
+    def mostrar_info(self):
+        return self.nombre
+
+
+class Medico(Persona):
+    def __init__(self, nombre, edad, especialidad):
+        super().__init__(nombre, edad)
         self.especialidad = especialidad
 
     def __str__(self):
         return f"Dr(a). {self.nombre} ({self.especialidad})"
 
-    def mostrar_medico(self):
+    def mostrar_info(self):
         print(f"Dr. {self.nombre} - {self.especialidad}")
 
 
-class Paciente:
+class Paciente(Persona):
     def __init__(self, nombre, edad, enfermedad, medico_asignado):
-        self.nombre = nombre
-        self.edad = edad
+        super().__init__(nombre, edad)
         self.enfermedad = enfermedad
         self.medico_asignado = medico_asignado
 
@@ -28,7 +40,7 @@ class Paciente:
     def asignar_medico(self, medico):
         self.medico_asignado = medico
 
-    def mostrar_paciente(self):
+    def mostrar_info(self):
         if self.medico_asignado:
             print(
                 f"\nPaciente: {self.nombre}, {self.edad} años. Afección: {self.enfermedad} - Médico asignado: {self.medico_asignado}"
@@ -39,24 +51,24 @@ class Paciente:
 
 class Hospital:
     def __init__(self, nombre):
+
         self.nombre = nombre
-        self.lista_medicos = []
-        self.lista_pacientes = []
+        self.lista_personas = []
 
     def validar_medico(self):
         while True:
             nombre = validar_nombre("\nIntroduzca el nombre del médico: ")
-            if any(m.nombre == nombre for m in self.lista_medicos):
+            if any(m.nombre == nombre for m in self.lista_personas):
                 print("\nYa registrado previamente")
             else:
                 return nombre
 
     def añadir_medico(self, nuevo_medico):
-        self.lista_medicos.append(nuevo_medico)
+        self.lista_personas.append(nuevo_medico)
         print(f"\nSe ha contratado al {nuevo_medico}")
 
     def añadir_paciente(self, nuevo_paciente):
-        self.lista_pacientes.append(nuevo_paciente)
+        self.lista_personas.append(nuevo_paciente)
         print(
             f"\nSe ha ingresado al paciente {nuevo_paciente}, {nuevo_paciente.edad} años, que acudió por: {nuevo_paciente.enfermedad}; y será atendido por {nuevo_paciente.medico_asignado}"
         )
@@ -64,57 +76,71 @@ class Hospital:
     def validar_paciente(self):
         while True:
             nombre = validar_nombre("\nIntroduzca el nombre del paciente: ")
-            if any(m.nombre == nombre for m in self.lista_pacientes):
+            if any(m.nombre == nombre for m in self.lista_personas):
                 print("\nYa registrado previamente")
             else:
                 return nombre
 
+    def extraer_medicos_de_lista_personas(self):
+        if not self.lista_personas:
+            return []
+        else:           
+            lista_de_medicos = []
+            for esc in self.lista_personas:
+                if isinstance(esc, Medico):                   
+                    lista_de_medicos.append(esc)
+            return lista_de_medicos
+            
+
+    def extraer_pacientes_de_lista_personas(self):
+        lista_de_pacientes = []
+        for esc in self.lista_personas:
+            if isinstance(esc, Paciente):
+                lista_de_pacientes.append(esc)
+        return lista_de_pacientes
+
+    def mostrar_medico_ordenados_por_especialidad(self):
+        lista_medicos = self.extraer_medicos_de_lista_personas()
+        if not lista_medicos:
+            print("\nNo se han contratado médicos todavía\n")
+        else:
+            lista_medicos.sort(key=lambda x: x.especialidad)
+            for i, med in enumerate(lista_medicos, start=1):
+                print(f"{i}. Nombre: {med.nombre} --- Especialidad: {med.especialidad}")
+            print(f"\nTotal de médicos contratados: {len(lista_medicos)}")
+
     def lista_de_medicos(self):
-        print("\n_____RESUMEN______")
+        print("\n_____RESUMEN DE MÉDICOS______")
         print(f"\nHOSPITAL {self.nombre}\n")
-        print("Lista de médicos contratados\n")
-        self.lista_medicos.sort(key=lambda x: x.especialidad)
-        for i, med in enumerate(self.lista_medicos, start=1):
-            print(f"{i}. Nombre: {med.nombre} --- Especialidad: {med.especialidad}")
+        self.mostrar_medico_ordenados_por_especialidad()
+
+    def mostrar_pacientes_ordenados_por_nombre(self):
+        lista_pacientes = self.extraer_pacientes_de_lista_personas()
+        if not lista_pacientes:
+            print("\nNo se han ingresado pacientes todavía\n")
+        else:
+            ordenados = sorted(lista_pacientes, key=lambda x: x.nombre)
+            for i, pac in enumerate(ordenados, start=1):
+                print(
+                    f"{i}. Nombre: {pac.nombre} - Edad: {pac.edad} años - Motivo de consulta: {pac.enfermedad} - Médico asignado: {pac.medico_asignado}"
+                )
+            print(f"\nTotal de pacientes ingresados: {len(lista_pacientes)}")
 
     def lista_de_pacientes(self):
-        print("\n_____RESUMEN______")
+        print("\n_____RESUMEN DE PACIENTES______")
         print(f"\nHOSPITAL {self.nombre}\n")
-        print("Lista de pacientes ingresados\n")
-        ordenados = sorted(self.lista_pacientes, key=lambda x: x.nombre)
-        for i, pac in enumerate(ordenados, start=1):
-            print(
-                f"{i}. Nombre: {pac.nombre} - Edad: {pac.edad} años - Motivo de consulta: {pac.enfermedad} - Médico asignado: {pac.medico_asignado}"
-            )
-
-    def seleccionar_medico(self):
-        print("\nLista de médicos contratados\n")
-        self.lista_medicos.sort(key=lambda x: x.especialidad)
-        for i, med in enumerate(self.lista_medicos, start=1):
-            print(f"{i}. Nombre: {med.nombre} --- Especialidad: {med.especialidad}")
+        self.mostrar_pacientes_ordenados_por_nombre()
 
     def mostrar_resumen(self):
         print("\n_____RESUMEN______")
         print(f"\nHOSPITAL {self.nombre}\n")
         print("Lista de médicos contratados")
         print("__________________________\n")
-        if self.lista_medicos:
-            ordenados = sorted(self.lista_medicos, key=lambda x: x.nombre)
-            for i, med in enumerate(ordenados, start=1):
-                print(f"{i}. Nombre: {med.nombre}---Especialidad: {med.especialidad}")
-            print(f"\nTotal de médicos contratados: {len(self.lista_medicos)}")
-            print()
-        else:
-            print("\nNo se han contratado médicos todavía\n")
+        self.mostrar_medico_ordenados_por_especialidad()
+        print()
         print("\nLista de pacientes")
         print("____________________")
-        if self.lista_pacientes:
-            self.lista_pacientes.sort(key=lambda x: x.nombre)
-            for i, pac in enumerate(self.lista_pacientes, start=1):
-                print(f"{i}. Nombre: {pac.nombre}")
-            print(f"\nTotal de pacientes ingresados: {len(self.lista_pacientes)}")
-        else:
-            print("\nNo se han ingresado pacientes todavía\n")
+        self.mostrar_pacientes_ordenados_por_nombre()
 
 
 def validar_especialidad_medica(nombre_del_medico):
@@ -122,31 +148,17 @@ def validar_especialidad_medica(nombre_del_medico):
     return especialidad
 
 
-def convertir_a_diccionario(lista_de_hospitales):
+def convertir_a_diccionario(lista_de_hospitales: list):
     datos_para_json = []
     for hospital in lista_de_hospitales:
-        diccionario_hospitales = {
-            "Nombre": hospital.nombre,
-            "Médicos": [],
-            "Pacientes": [],
-        }
-        for medicos in hospital.lista_medicos:
-            diccionario_hospitales["Médicos"].append(
-                {"Nombre": medicos.nombre, "Especialidad": medicos.especialidad}
-            )
-        for pacientes in hospital.lista_pacientes:
-            diccionario_hospitales["Pacientes"].append(
-                {
-                    "Nombre": pacientes.nombre,
-                    "Edad": pacientes.edad,
-                    "Afección": pacientes.enfermedad,
-                    "Médico asignado": pacientes.medico_asignado.nombre
-                    if pacientes.medico_asignado
-                    else None,
-                }
-            )
-
-        datos_para_json.append(diccionario_hospitales)
+        diccionario_hospital = {"Nombre": hospital.nombre, "Personas": []}
+        for persona in hospital.lista_personas:
+            diccionario_personas = persona.__dict__.copy()
+            diccionario_personas["Tipo"] = persona.devolver_tipo()
+            if isinstance(persona, Paciente) and persona.medico_asignado:
+                diccionario_personas["medico_asignado"] = persona.medico_asignado.nombre
+            diccionario_hospital["Personas"].append(diccionario_personas)             
+        datos_para_json.append(diccionario_hospital)
     return datos_para_json
 
 
@@ -156,7 +168,7 @@ def guardar_datos(lista_de_hospitales):
         json.dump(datos, archivo, ensure_ascii=False, indent=4)
 
 
-def exportar_datos(lista_de_hospitales):
+def exportar_datos(lista_de_hospitales: list):
     nombre_del_archivo = "Reporte_Global.csv"
     with open(nombre_del_archivo, mode="w", encoding="utf-8", newline="") as archivo:
         columnas = [
@@ -171,71 +183,82 @@ def exportar_datos(lista_de_hospitales):
         escritor.writeheader()
 
         for hospital in lista_de_hospitales:
-            for medico in hospital.lista_medicos:
+            for persona in hospital.lista_personas:
+                if isinstance (persona, Medico):
+                    especialidad_afeccion = persona.especialidad
+                    medico_asignado = "-"
+                else:
+                    especialidad_afeccion = persona.enfermedad
+                    medico_asignado = persona.medico_asignado.nombre if persona.medico_asignado else "Ninguno"
+                    
                 escritor.writerow(
                     {
                         "Hospital": hospital.nombre,
-                        "Clase": "Médico",
-                        "Nombre": medico.nombre,
-                        "Edad": "-",
-                        "Especialidad/Afección": medico.especialidad,
-                        "Médico Asignado": "-",
+                        "Clase": persona.devolver_tipo(),
+                        "Nombre": persona.nombre,
+                        "Edad": persona.edad,
+                        "Especialidad/Afección": especialidad_afeccion,
+                        "Médico Asignado": medico_asignado,
                     }
                 )
-            for paciente in hospital.lista_pacientes:
-                escritor.writerow(
-                    {
-                        "Hospital": hospital.nombre,
-                        "Clase": "Paciente",
-                        "Nombre": paciente.nombre,
-                        "Edad": paciente.edad,
-                        "Especialidad/Afección": paciente.enfermedad,
-                        "Médico Asignado": paciente.medico_asignado.nombre
-                        if paciente.medico_asignado
-                        else "Ninguno",
-                    }
-                )
+           
         print(
             f"\nSe han exportado los datos correctamente al archivo llamado: {nombre_del_archivo}"
         )
 
 
-def cargar_datos():
+def descargar_datos():
     try:
         with open("Datos_hospital.json", "r", encoding="utf-8") as archivo:
-            datos = json.load(archivo)
-            lista_de_hospitales = []
-            for diccionario_hospitales in datos:
-                hospital = Hospital(diccionario_hospitales["Nombre"])
+            datos_descargados = json.load(archivo)
+            if datos_descargados:
+                lista_de_hospitales = []
+                for cada_diccionario in datos_descargados:
+                    hospital = Hospital(cada_diccionario["Nombre"])
+ 
+                    for cada_persona in cada_diccionario["Personas"]: #reconstruyendo medicos
+                        if cada_persona["Tipo"] == "Medico":
+                            medico = cada_persona["nombre"]
+                            edad = cada_persona["edad"]
+                            especialidad = cada_persona["especialidad"]
+                            nuevo_medico = Medico(medico, edad, especialidad)
+                            hospital.añadir_medico(nuevo_medico)
 
-                # reconstruyendo medicos
+                        # reconstruyendo pacientes
 
-                for diccionario_de_medicos in diccionario_hospitales["Médicos"]:
-                    medico = diccionario_de_medicos["Nombre"]
-                    especialidad = diccionario_de_medicos["Especialidad"]
-                    nuevo_medico = Medico(medico, especialidad)
-                    hospital.lista_medicos.append(nuevo_medico)
+                        else:
+                            nuevo_paciente = Paciente(
+                                cada_persona["nombre"],
+                                cada_persona["edad"],
+                                cada_persona["enfermedad"],
+                                None,
+                            )
+                            hospital.añadir_paciente(nuevo_paciente)
 
-                # reconstruyendo pacientes
-
-                for diccionario_de_pacientes in diccionario_hospitales["Pacientes"]:
-                    medico_asignado = None
-                    if diccionario_de_pacientes["Médico asignado"]:
-                        for med in hospital.lista_medicos:
-                            if (
-                                med.nombre
-                                == diccionario_de_pacientes["Médico asignado"]
-                            ):
-                                medico_asignado = med
-                                break
-                    nombre = diccionario_de_pacientes["Nombre"]
-                    edad = diccionario_de_pacientes["Edad"]
-                    enfermedad = diccionario_de_pacientes["Afección"]
-                    nuevo_paciente = Paciente(nombre, edad, enfermedad, medico_asignado)
-                    hospital.lista_pacientes.append(nuevo_paciente)
-                lista_de_hospitales.append(hospital)
-        print("\nDatos cargados exitosamente")
+                    # SEGUNDA PASADA: asignar los médicos a los pacientes
+                    buscador_medicos = {}
+                    for cada_persona_objeto in hospital.lista_personas:
+                        if isinstance (cada_persona_objeto, Medico):
+                            buscador_medicos[cada_persona_objeto.nombre] = cada_persona_objeto
+                    
+                    for cada_persona in cada_diccionario["Personas"]:
+                        if cada_persona["Tipo"] == "Paciente" and cada_persona.get("medico_asignado"):
+                            nombre_medico = cada_persona["medico_asignado"]
+                            # Buscamos al paciente
+                            for cada_objeto_paciente in hospital.lista_personas:
+                                if cada_objeto_paciente.nombre == cada_persona["nombre"]:
+                                    objeto_medico = buscador_medicos.get(nombre_medico)
+                                    if objeto_medico:
+                                        cada_objeto_paciente.asignar_medico(objeto_medico)
+                                    break
+                            
+                    lista_de_hospitales.append(hospital)
+                print("\nDatos cargados exitosamente")
+            else:
+                print("\nDatos corruptos. Se creará una nueva base de datos\n")
+                return []       
         return lista_de_hospitales
+
     except FileNotFoundError:
         print("\nNo existen datos previos. Se creará una nueva base de datos")
         return []
@@ -246,7 +269,7 @@ def cargar_datos():
 
 def validar_nombre(mensaje):
     while True:
-        nombre = input(mensaje).title().strip()
+        nombre = pedir_texto(mensaje)
         if len(nombre) < 3 or any(c.isdigit() for c in nombre):
             print(
                 "\nEl nombre debe tener más de 3 caracteres, y contener únicamente letras."
@@ -322,7 +345,7 @@ def introducir_nombre_hospital(lista, mensaje):
         tiene_numeros = any(c.isdigit() for c in nombre)
         if len(nombre) < 3 or tiene_numeros:
             print(
-                "\nEl elemento introducido debe ser mayor a 3 caracteres, y contener únicamnete letras."
+                "\nEl elemento introducido debe ser mayor a 3 caracteres, y contener únicamente letras."
             )
             continue
         if any(hospital.nombre == nombre for hospital in lista):
@@ -339,12 +362,13 @@ def case1(nombre_del_hospital, lista_de_hospitales):
 
 
 def case3_mostrar_relacion_de_medicos(hospital_actual: Hospital):
-    if not hospital_actual:
+    lista_de_medicos = hospital_actual.extraer_medicos_de_lista_personas()
+    if not lista_de_medicos:
+        print("\nDebe contratar al menos un médico primero")
         return
-    if len(hospital_actual.lista_medicos) > 0:
-        hospital_actual.lista_de_medicos()
     else:
-        print("\nNo se ha contratado ningún médico aún")
+        hospital_actual.lista_de_medicos()
+    
 
 
 def case2_if_lista_de_hospitales(lista_de_hospitales):
@@ -360,10 +384,11 @@ def case2_if_lista_de_hospitales(lista_de_hospitales):
         return hospital_actual
 
 
-def contratar_medico(lista_de_hospitales, hospital_actual):
+def contratar_medico(lista_de_hospitales, hospital_actual: Hospital):
     nombre_del_medico = hospital_actual.validar_medico()
+    edad = pedir_edad("Edad: ")
     especialidad = validar_especialidad_medica(nombre_del_medico)
-    medico1 = Medico(nombre_del_medico, especialidad)
+    medico1 = Medico(nombre_del_medico, edad, especialidad)
     hospital_actual.añadir_medico(medico1)
     guardar_datos(lista_de_hospitales)
 
@@ -375,13 +400,17 @@ def ingresar_paciente(hospital_actual: Hospital, lista_de_hospitales):
         f"Introduzca el motivo de consulta de {nombre_del_paciente}: "
     )
     print(f"\nSeleccione un médico para asignarle al paciente {nombre_del_paciente}")
-    hospital_actual.seleccionar_medico()
-
+    hospital_actual.lista_de_medicos() #imprime lista de medicos ordenados por especialidad
+    lista_de_medicos = hospital_actual.extraer_medicos_de_lista_personas()
+    lista_de_medicos.sort(key=lambda x: x.especialidad)
+    if not lista_de_medicos:
+        return
+    
     opcion = escoer_opcion(
         "\nOpción: ",
-        range(1, len(hospital_actual.lista_medicos) + 1),
+        range(1, len(lista_de_medicos) + 1),
     )
-    medico_asignado = hospital_actual.lista_medicos[opcion - 1]
+    medico_asignado = lista_de_medicos[opcion - 1]
     print(
         f"\nHa seleccionado al médico {medico_asignado.nombre}, {medico_asignado.especialidad} para atender al paciente {nombre_del_paciente}."
     )
@@ -396,25 +425,24 @@ def ingresar_paciente(hospital_actual: Hospital, lista_de_hospitales):
 
 
 def mostrar_resumen(hospital_actual: Hospital):
-    if (
-        len(hospital_actual.lista_pacientes) > 0
-        or len(hospital_actual.lista_medicos) > 0
-    ):
+    if len(hospital_actual.lista_personas) > 0:
         hospital_actual.mostrar_resumen()
     else:
         print("\nNo se ha guardado ningún dato todavía")
 
 
 def case2(hospital_actual: Hospital, lista_de_hospitales):
-    if hospital_actual:
-        if len(hospital_actual.lista_medicos) == 0:
-            print("\nNo hay médicos en este hospital. Contrate uno primero")
-        else:
-            ingresar_paciente(hospital_actual, lista_de_hospitales)
+    lista_medicos = hospital_actual.extraer_medicos_de_lista_personas()
+    if not lista_medicos:
+        print("\nDebe contratar al menos un médico primero")
+        return
+    else:
+        ingresar_paciente(hospital_actual, lista_de_hospitales)
 
 
 def mostrar_relacion_de_pacientes(hospital_actual: Hospital):
-    if len(hospital_actual.lista_pacientes) > 0:
+    lista_de_pacientes = hospital_actual.extraer_pacientes_de_lista_personas()
+    if len(lista_de_pacientes) > 0:
         hospital_actual.lista_de_pacientes()
     else:
         print("\nNo se ha internado ningún paciente aún")
@@ -432,7 +460,7 @@ def case1_menu_inicial(lista_de_hospitales: list[Hospital]):
 
 programa = True
 print("\nSistema de gestión de pacientes")
-lista_de_hospitales = cargar_datos()
+lista_de_hospitales = descargar_datos()
 try:
     while programa:
         menu_inicial()
@@ -469,7 +497,12 @@ try:
                     print("\nNo se ha añadido ningún centro médico. Añada uno primero.")
             case 3:
                 try:
-                    exportar_datos(lista_de_hospitales)
+                    if lista_de_hospitales:
+                        exportar_datos(lista_de_hospitales)
+                    else:
+                        print(
+                            "\nNo se ha añadido ningún centro médico. Añada uno primero."
+                        )
                 except PermissionError:
                     print(
                         "\nNo es posible guardar porque otra aplicación tiene abierto el programa. Ciérrelo e intente de nuevo."
